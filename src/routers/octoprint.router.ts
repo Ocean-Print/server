@@ -1,6 +1,8 @@
-import * as JobService from "../services/job.service";
-import * as errors from "../utilities/error.utility";
-import * as ProjectFileUtility from "../utilities/projectFile.utility";
+import * as JobService from "@/services/job.service";
+import * as PrinterService from "@/services/printer.service";
+import * as errors from "@/utilities/error.utility";
+import * as MaterialUtility from "@/utilities/material.utility";
+import * as ProjectFileUtility from "@/utilities/projectFile.utility";
 import multipartPlugin, { MultipartFile } from "@fastify/multipart";
 import { type FastifyPluginAsync } from "fastify";
 import fse from "fs-extra";
@@ -10,28 +12,34 @@ import path from "node:path";
 
 const UPLOADS_DIR = path.resolve(
 	process.cwd(),
-	process.env.UPLOADS_DIR ?? "/data/uploads",
+	process.env.DATA_UPLOADS_DIR ?? "/data/uploads",
 );
 const THUMBNAILS_DIR = path.resolve(
 	process.cwd(),
-	process.env.THUMBNAILS_DIR ?? "/data/thumbnails",
+	process.env.DATA_THUMBNAILS_DIR ?? "/data/thumbnails",
 );
 
 export default function oceanPrintRoute(): FastifyPluginAsync {
 	return async function (fastify) {
+		fastify.setErrorHandler((error, request, reply) => {
+			console.error(error);
+
+			if (error instanceof errors.OceanPrintError) {
+				reply
+					.status(error.statusCode ?? 400)
+					.send(error.message ?? "An unknown error occurred");
+			} else {
+				reply
+					.status(500)
+					.send("An unknown error occurred. Please contact staff.");
+			}
+		});
+
 		fastify.register(multipartPlugin, {
 			limits: {
 				files: 1,
 				fileSize: 1_000_000_000, // 1GB
 			},
-		});
-
-		fastify.setErrorHandler((error, request, reply) => {
-			console.error(error);
-
-			reply
-				.status(error.statusCode ?? 400)
-				.send(error.message ?? "An unknown error occurred");
 		});
 
 		fastify.get("/api/version", async (request, reply) => {
@@ -76,6 +84,15 @@ export default function oceanPrintRoute(): FastifyPluginAsync {
 			const projectName = data.filename.replace(/\.3mf$/i, "");
 			const parsedName = ProjectFileUtility.parseName(projectName);
 			const metadata = await ProjectFileUtility.getMetadata(tmpPath);
+
+			// Ensure the material is valid
+			const printerMaterials = await PrinterService.getAllMaterials();
+			const isValidMaterials = printerMaterials.some((printerMaterial) =>
+				MaterialUtility.compareMaterials(printerMaterial, metadata.materials),
+			);
+			if (!isValidMaterials) {
+				throw errors.incompatibleMaterialsError();
+			}
 
 			// Save the file to the data directory
 			const fileName = `${parsedName.description}-${uuid}.3mf`;

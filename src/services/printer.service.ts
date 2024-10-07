@@ -167,6 +167,19 @@ export async function setCleared(printerId: number, isSuccessful: boolean) {
 }
 
 /**
+ *
+ * @returns
+ */
+export async function getAllMaterials() {
+	let printers = await prisma.printer.findMany({
+		select: {
+			materials: true,
+		},
+	});
+	return printers.map((printer) => printer.materials);
+}
+
+/**
  * Set all printers to an unknown state and start queued jobs. This should only be used when the server starts up.
  */
 export async function initializePrinters() {

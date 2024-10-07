@@ -115,3 +115,14 @@ export function fileNotFoundError() {
 export function fileTooLargeError() {
 	return new OceanPrintError("FileTooLarge", "File provided is too large", 400);
 }
+
+/**
+ * Incompatible materials error.
+ */
+export function incompatibleMaterialsError() {
+	return new OceanPrintError(
+		"IncompatibleMaterials",
+		"Selected materials are not compatible with any printer",
+		400,
+	);
+}

@@ -1,5 +1,8 @@
 import server from "./server";
 import * as PrinterService from "./services/printer.service";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const main = async () => {
 	// Reset printer states and queue jobs
