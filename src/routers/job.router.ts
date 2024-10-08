@@ -145,13 +145,13 @@ export default function jobRouter(): FastifyPluginAsync {
 
 		fastify.route<{
 			Params: {
-				id: number;
+				id: string;
 			};
 		}>({
 			method: "DELETE",
 			url: "/:id",
 			handler: async (request, reply) => {
-				const id = request.params.id;
+				const id = parseInt(request.params.id);
 				const job = await JobService.getJob(id);
 				if (!job) throw ErrorUtility.jobNotFoundError(id);
 				if (["PRINTING", "DISPATCHING"].includes(job.state))
