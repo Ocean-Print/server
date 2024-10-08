@@ -1,3 +1,5 @@
+import * as ColorUtility from "./color.utility";
+
 /**
  * Determine if two materials are compatible.
  * @param a - The first material.
@@ -16,23 +18,15 @@ export function compareMaterial(
 	if (!matchColor) return true;
 
 	// If the colors are the same, they are compatible
-	if (a.color === b.color) return 1;
+	if (a.color === b.color) return true;
 
-	// Parse the hex colors and return a score based on the difference
-	const colorA = a.color.replace("#", "");
-	const colorB = b.color.replace("#", "");
-	const rA = parseInt(colorA.substring(0, 2), 16);
-	const gA = parseInt(colorA.substring(2, 4), 16);
-	const bA = parseInt(colorA.substring(4, 6), 16);
-	const rB = parseInt(colorB.substring(0, 2), 16);
-	const gB = parseInt(colorB.substring(2, 4), 16);
-	const bB = parseInt(colorB.substring(4, 6), 16);
-	const diff = Math.sqrt(
-		Math.pow(rA - rB, 2) + Math.pow(gA - gB, 2) + Math.pow(bA - bB, 2),
-	);
-
-	// Return true if the colors are similar enough
-	return 1 - diff / 441.6729559300637 >= 0.5;
+	// If the colors are within a certain deltaE, they are compatible
+	const aRgb = ColorUtility.forceHexToRgb(a.color);
+	const bRgb = ColorUtility.forceHexToRgb(b.color);
+	const aLab = ColorUtility.rgbToLab(aRgb);
+	const bLab = ColorUtility.rgbToLab(bRgb);
+	const deltaE = ColorUtility.deltaE(aLab, bLab);
+	return deltaE <= 10; // Arbitrary threshold, 10 is a good starting point
 }
 
 /**
@@ -50,7 +44,7 @@ export function compareMaterials(
 
 	// Compare each material in b to the corresponding material in a
 	for (let i = 0; i < b.length; i++) {
-		if (!compareMaterial(a[i], b[i], /colored/i.test(b[i].name ?? "")))
+		if (!compareMaterial(a[i], b[i], /color/i.test(b[i].name ?? "")))
 			return false;
 	}
 
