@@ -1,4 +1,5 @@
 import * as JobService from "../services/job.service";
+import * as ErrorUtility from "../utilities/error.utility";
 import { type FastifyPluginAsync } from "fastify";
 
 function parseSortParams(sort: string) {
@@ -100,6 +101,75 @@ export default function jobRouter(): FastifyPluginAsync {
 					jobs,
 					count,
 				};
+			},
+		});
+
+		fastify.route<{
+			Params: {
+				id: number;
+			};
+			Body: {
+				priority: number;
+			};
+		}>({
+			method: "PATCH",
+			url: "/:id",
+			schema: {
+				params: {
+					type: "object",
+					properties: {
+						id: { type: "integer" },
+					},
+				},
+				body: {
+					type: "object",
+					properties: {
+						priority: { type: "integer" },
+					},
+				},
+			},
+			handler: async (request, reply) => {
+				const id = request.params.id;
+				const { priority } = request.body;
+				const job = await JobService.updateJob(id, {
+					priority,
+				});
+				if (!job) throw ErrorUtility.jobNotFoundError(id);
+
+				reply.send({
+					success: true,
+					job,
+				});
+			},
+		});
+
+		fastify.route<{
+			Params: {
+				id: number;
+			};
+		}>({
+			method: "DELETE",
+			url: "/:id",
+			handler: async (request, reply) => {
+				const id = request.params.id;
+				const job = await JobService.getJob(id);
+				if (!job) throw ErrorUtility.jobNotFoundError(id);
+				if (["PRINTING", "DISPATCHING"].includes(job.state))
+					throw ErrorUtility.deleteFailedError("job");
+
+				await JobService.deleteJob(id)
+					.then((job) => {
+						reply.send({
+							success: true,
+							job,
+						});
+					})
+					.catch((error) => {
+						reply.send({
+							success: false,
+							error,
+						});
+					});
 			},
 		});
 	};

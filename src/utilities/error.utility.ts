@@ -126,3 +126,10 @@ export function incompatibleMaterialsError() {
 		400,
 	);
 }
+
+/**
+ * Delete failed error.
+ */
+export function deleteFailedError(object: string) {
+	return new OceanPrintError("DeleteFailed", `Failed to delete ${object}`, 500);
+}
