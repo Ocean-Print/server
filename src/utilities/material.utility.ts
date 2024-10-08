@@ -39,7 +39,7 @@ export function compareMaterials(
 
 	// Compare each material in b to the corresponding material in a
 	for (let i = 0; i < b.length; i++) {
-		if (!compareMaterial(a[i], b[i], /colored/i.test(b[i].name ?? "")))
+		if (!compareMaterial(a[i], b[i], /color/i.test(b[i].name ?? "")))
 			return false;
 	}
 
