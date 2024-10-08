@@ -54,6 +54,8 @@ WORKDIR /app
 
 # Install all dependencies
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
+# Install prisma
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install prisma
 
 #######
 # Run #
