@@ -92,7 +92,10 @@ async function worker({ printerId }: JobData) {
 
 	console.log(`[OP][DISPATCH][${printer.id}] Dispatching job ${jobToSend.id}`);
 
-	const job = await JobService.getJob(jobToSend.id);
+	// Get the current job, and also update the job state
+	const job = await JobService.updateJob(jobToSend.id, {
+		state: "DISPATCHING",
+	});
 	if (!job) {
 		console.error(`[OP][DISPATCH][${printer.id}] Job not found`);
 		await PrinterService.updatePrinter(printer.id, {
@@ -111,6 +114,10 @@ async function worker({ printerId }: JobData) {
 		console.error(
 			`[OP][DISPATCH][${printer.id}] Error sending job: ${sendJobError}`,
 		);
+		// Reset states
+		await JobService.updateJob(job.id, {
+			state: "QUEUED",
+		});
 		await PrinterService.updatePrinter(printer.id, {
 			systemStatus: {
 				...printer.systemStatus,
@@ -127,6 +134,10 @@ async function worker({ printerId }: JobData) {
 		console.error(
 			`[OP][DISPATCH][${printer.id}] Error starting job: ${startJobError}`,
 		);
+		// Reset states
+		await JobService.updateJob(job.id, {
+			state: "QUEUED",
+		});
 		await PrinterService.updatePrinter(printer.id, {
 			systemStatus: {
 				...printer.systemStatus,
