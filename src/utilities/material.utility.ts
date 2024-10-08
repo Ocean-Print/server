@@ -20,8 +20,13 @@ export function compareMaterial(
 	// If the colors are the same, they are compatible
 	if (a.color === b.color) return true;
 
-	// If the colors are within 20 degrees of each other, they are compatible
-	return ColorUtility.compareHexHues(a.color, b.color) <= 20;
+	// If the colors are within a certain deltaE, they are compatible
+	const aRgb = ColorUtility.forceHexToRgb(a.color);
+	const bRgb = ColorUtility.forceHexToRgb(b.color);
+	const aLab = ColorUtility.rgbToLab(aRgb);
+	const bLab = ColorUtility.rgbToLab(bRgb);
+	const deltaE = ColorUtility.deltaE(aLab, bLab);
+	return deltaE <= 10; // Arbitrary threshold, 10 is a good starting point
 }
 
 /**
