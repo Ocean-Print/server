@@ -3,6 +3,7 @@ import * as JobService from "@/services/job.service";
 import * as PrinterService from "@/services/printer.service";
 import * as ErrorUtility from "@/utilities/error.utility";
 import * as FtpUtility from "@/utilities/ftp.utility";
+import * as MaterialUtility from "@/utilities/material.utility";
 import * as MqttUtility from "@/utilities/mqtt.utility";
 import * as QueueUtility from "@/utilities/queue.utility";
 import type { Printer } from "@prisma/client";
@@ -205,23 +206,10 @@ async function findJob(printer: Printer): Promise<Result<JobDetail>> {
 				break;
 			}
 			for (const job of jobs) {
-				let validChoice = false;
-				for (const jm of job.project.materials) {
-					for (const pm of printer.materials ?? []) {
-						if (/color(ed)?/i.test(jm.type)) {
-							if (pm.type === jm.type && pm.color === jm.color) {
-								validChoice = true;
-								break;
-							}
-						} else {
-							if (pm.type === jm.type) {
-								validChoice = true;
-								break;
-							}
-						}
-					}
-					if (validChoice) break;
-				}
+				let validChoice = MaterialUtility.compareMaterials(
+					printer.materials ?? [],
+					job.project.materials,
+				);
 				if (validChoice) {
 					return [job, undefined];
 					break;
