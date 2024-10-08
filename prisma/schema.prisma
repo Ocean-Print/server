@@ -59,6 +59,7 @@ model Project {
 
 enum JobState {
   QUEUED
+  DISPATCHING
   PRINTING
   FAILED
   COMPLETED

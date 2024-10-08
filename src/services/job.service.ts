@@ -153,3 +153,15 @@ export function updateJob(jobId: number, updatedJob: Prisma.JobUpdateInput) {
 		select: jobDetailSelect,
 	});
 }
+
+/**
+ * Delete a job.
+ * @param jobId - The ID of the job to delete.
+ * @returns The deleted job.
+ */
+export function deleteJob(jobId: number) {
+	return prisma.job.delete({
+		where: { id: jobId },
+		select: jobDetailSelect,
+	});
+}
