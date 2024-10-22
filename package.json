@@ -28,6 +28,7 @@
 		"@types/fs-extra": "^11.0.4",
 		"@types/node": "^22.7.4",
 		"prettier": "^3.3.3",
+		"prettier-plugin-prisma": "^5.0.0",
 		"prisma": "^5.20.0",
 		"prisma-json-types-generator": "^3.1.1",
 		"tsc-alias": "^1.8.10",

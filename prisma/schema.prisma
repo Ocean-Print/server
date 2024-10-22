@@ -40,11 +40,11 @@ enum UserRole {
 }
 
 model User {
-  id      Int     @id @default(autoincrement())
+  id       Int       @id @default(autoincrement())
   name     String
   email    String
-  role     UserRole @default(DEFAULT)
-  notes    String @default("")
+  role     UserRole  @default(DEFAULT)
+  notes    String    @default("")
   projects Project[]
 
   createdAt DateTime @default(now())
@@ -52,7 +52,7 @@ model User {
 }
 
 model Project {
-  id           Int @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   name         String
   notes        String @default("")
   hash         String
@@ -63,9 +63,9 @@ model Project {
   /// ![{ id: number; name: string; type: string; usage: number; color: string; }]
   materials Json[] @default([])
 
-  user   User @relation(fields: [userId], references: [id])
+  user   User  @relation(fields: [userId], references: [id])
   userId Int
-  jobs Job[]
+  jobs   Job[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -84,11 +84,11 @@ model Job {
   state    JobState @default(QUEUED)
   priority Int      @default(0)
 
-  project   Project @relation(fields: [projectId], references: [id])
-  projectId Int
+  project        Project  @relation(fields: [projectId], references: [id])
+  projectId      Int
   currentPrinter Printer?
-  printer   Printer? @relation("jobs", fields: [printerId], references: [id])
-  printerId Int?
+  printer        Printer? @relation("jobs", fields: [printerId], references: [id])
+  printerId      Int?
 
   createdAt DateTime  @default(now())
   startedAt DateTime?
@@ -96,24 +96,24 @@ model Job {
 }
 
 model Printer {
-  id        Int  @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   name      String
-  type     String
-  notes     String @default("")
+  type      String
+  notes     String  @default("")
   isEnabled Boolean @default(true)
 
   /// ![{ host: string, serial: string; accessCode: string; }]
-  options   Json @default("{}")
+  options       Json   @default("{}")
   /// ![{ type: string; color: string; }]
-  materials Json[] @default([])
+  materials     Json[] @default([])
   /// ![{ state: "UNKNOWN" | "ERROR" | "GOOD" | "UPDATING" | "DISPATCHING"; errors: Array<{name: string, message: string}>; progress: number; isClear: boolean; }]
-  systemStatus  Json @default("{}")
+  systemStatus  Json   @default("{}")
   /// ![{ state: "UNKNOWN" | "IDLE" | "PRINTING" | "PAUSED" | "FINISHED"; errors: Array<{name: string, message: string}>; currentJobName: string; progress: number; timeRemaining: number; }]
-  printerStatus Json @default("{}")
+  printerStatus Json   @default("{}")
 
-  currentJob   Job?    @relation(fields: [currentJobId], references: [id])
-  currentJobId Int? @unique
-  jobs Job[] @relation("jobs")
+  currentJob   Job?  @relation(fields: [currentJobId], references: [id])
+  currentJobId Int?  @unique
+  jobs         Job[] @relation("jobs")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
