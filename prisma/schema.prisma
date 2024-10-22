@@ -14,36 +14,28 @@ datasource db {
 enum GrantType {
   IP
   PASSWORD
-  OTP
   CARD
-  TOKEN
 }
 
 model Grant {
   id          Int       @id @default(autoincrement())
   type        GrantType
-  name        String
+  name        String    @unique
   data        String
+  /// ![string]
   permissions Json[]    @default([])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([type, name])
-}
-
-enum UserRole {
-  STAFF
-  MPI
-  PI
-  DEFAULT
+  @@unique([type, data])
 }
 
 model User {
   id       Int       @id @default(autoincrement())
   name     String
   email    String
-  role     UserRole  @default(DEFAULT)
+  role     String?
   notes    String    @default("")
   projects Project[]
 
