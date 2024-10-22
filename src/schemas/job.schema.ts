@@ -17,7 +17,8 @@ export const jobPreviewSelect: Prisma.JobSelect = {
 			user: {
 				select: {
 					id: true,
-					username: true,
+					name: true,
+					email: true,
 				},
 			},
 		},
@@ -52,7 +53,8 @@ export const jobDetailSelect: Prisma.JobSelect = {
 			user: {
 				select: {
 					id: true,
-					username: true,
+					name: true,
+					email: true,
 				},
 			},
 		},

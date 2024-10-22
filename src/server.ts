@@ -12,11 +12,22 @@ server.setErrorHandler((error, request, reply) => {
 			success: false,
 			error: error.toJSON(),
 		});
+	} else if (error.code === "FST_ERR_VALIDATION") {
+		reply.status(400).send({
+			success: false,
+			error: {
+				name: "ValidationError",
+				message: error.message,
+			},
+		});
 	} else {
 		console.error("[OP][SERVER] Unknown error:", error);
 		reply.status(500).send({
-			error: "InternalError",
-			message: "An unknown error occurred",
+			success: false,
+			error: {
+				name: "UnknownError",
+				message: "An unknown error occurred.",
+			},
 		});
 	}
 });
