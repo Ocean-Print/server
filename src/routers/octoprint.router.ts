@@ -127,14 +127,12 @@ export default function oceanPrintRoute(): FastifyPluginAsync {
 						user: {
 							connectOrCreate: {
 								where: {
-									username: parsedName.user,
+									name: parsedName.user,
 								},
 								create: {
-									username: parsedName.user,
+									name: parsedName.user,
 									email: parsedName.user + "@gatech.edu",
-									password: "",
 									role: userRole,
-									access: "NONE",
 								},
 							},
 						},
