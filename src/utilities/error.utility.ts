@@ -133,3 +133,24 @@ export function incompatibleMaterialsError() {
 export function deleteFailedError(object: string) {
 	return new OceanPrintError("DeleteFailed", `Failed to delete ${object}`, 500);
 }
+
+/**
+ * Invalid
+ */
+export function invalidTokenError() {
+	return new OceanPrintError("InvalidToken", "Invalid token", 400);
+}
+
+/**
+ * Unauthorized error.
+ */
+export function unauthorizedError(reason: string = "Unauthorized") {
+	return new OceanPrintError("Unauthorized", reason, 401);
+}
+
+/**
+ * Forbidden error.
+ */
+export function forbiddenError() {
+	return new OceanPrintError("Forbidden", "Forbidden", 403);
+}
