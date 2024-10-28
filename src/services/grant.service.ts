@@ -6,15 +6,6 @@ import type { Prisma, GrantType } from "@prisma/client";
 import crypto from "crypto";
 
 /**
- * Create a new job in the database.
- * @param newJob - The job to create.
- * @returns The created job.
- */
-export function createJob(newJob: Prisma.JobCreateInput) {
-	return prisma.job.create({ data: newJob, select: jobDetailSelect });
-}
-
-/**
  * Get grants from the database.
  * @param pagination - The pagination options.
  * @param filter - The filter options.
@@ -27,7 +18,6 @@ export function getGrants(
 	},
 	filter: {
 		type?: GrantType | GrantType[];
-		name?: string;
 	},
 	sort:
 		| Prisma.GrantOrderByWithRelationInput
@@ -39,11 +29,10 @@ export function getGrants(
 		where: {
 			...(Array.isArray(filter.type) ? { state: { in: filter.type } } : {}),
 			...(filter.type && !Array.isArray(filter.type)
-				? { state: filter.type }
+				? { type: filter.type }
 				: {}),
-			...(filter.name ? { name: filter.name } : {}),
 		},
-		select: jobPreviewSelect,
+		select: grantPreviewSelect,
 		orderBy: sort,
 	});
 }
@@ -159,6 +148,12 @@ export function getGrantForPassword(password: string) {
  * @returns The created grant.
  */
 export function createGrant(newGrant: Prisma.GrantCreateInput) {
+	if (newGrant.type === "CARD" || newGrant.type === "PASSWORD") {
+		newGrant.data = crypto
+			.createHash("sha256")
+			.update(newGrant.data)
+			.digest("hex");
+	}
 	return prisma.grant.create({ data: newGrant, select: grantDetailSelect });
 }
 
@@ -184,7 +179,7 @@ export function updateGrant(
  * @param grantId - The ID of the grant to delete.
  * @returns The deleted grant.
  */
-export function deleteJob(grantId: number) {
+export function deleteGrant(grantId: number) {
 	return prisma.grant.delete({
 		where: { id: grantId },
 		select: grantDetailSelect,

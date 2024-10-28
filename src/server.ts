@@ -20,6 +20,15 @@ server.setErrorHandler((error, request, reply) => {
 				message: error.message,
 			},
 		});
+	} else if (error.code === "P2025") {
+		// Prisma model not found
+		reply.status(404).send({
+			success: false,
+			error: {
+				name: `${error.meta.modelName}NotFound`,
+				message: `The requested ${error.meta.modelName} could not be found.`,
+			},
+		});
 	} else {
 		console.error("[OP][SERVER] Unknown error:", error);
 		reply.status(500).send({

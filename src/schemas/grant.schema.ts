@@ -16,6 +16,7 @@ export const grantDetailSelect: Prisma.GrantSelect = {
 	type: true,
 	name: true,
 	data: true,
+	permissions: true,
 	createdAt: true,
 	updatedAt: true,
 };
