@@ -6,6 +6,7 @@ import * as FtpUtility from "@/utilities/ftp.utility";
 import * as MaterialUtility from "@/utilities/material.utility";
 import * as MqttUtility from "@/utilities/mqtt.utility";
 import * as QueueUtility from "@/utilities/queue.utility";
+import * as WebhookUtility from "@/utilities/webhook.utility";
 import type { Printer } from "@prisma/client";
 import { PrintStage } from "bambu-js";
 import path from "node:path";
@@ -176,6 +177,9 @@ async function worker({ printerId }: JobData) {
 			},
 		},
 	});
+
+	// Send webhook
+	WebhookUtility.sendWebhook(job);
 
 	console.log(`[OP][DISPATCH][${printer.id}] Dispatch complete`);
 }

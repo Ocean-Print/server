@@ -2,6 +2,7 @@ import * as errors from "../utilities/error.utility";
 import prisma from "../utilities/prisma.utility";
 import * as CameraQueue from "@/queues/camera.queue";
 import * as UpdateQueue from "@/queues/update.queue";
+import { jobDetailSelect } from "@/schemas/job.schema";
 import {
 	printerDetailSelect,
 	PrinterDetailOutput,
@@ -9,6 +10,7 @@ import {
 	PrinterStatus,
 	SystemStatus,
 } from "@/schemas/printer.schema";
+import * as WebhookUtility from "@/utilities/webhook.utility";
 import type { Prisma } from "@prisma/client";
 
 export const DEFAULT_PRINTER_STATUS: PrinterStatus = {
@@ -154,7 +156,7 @@ export async function setCleared(printerId: number, isSuccessful: boolean) {
 		return;
 	}
 
-	await prisma.job
+	let jobState = await prisma.job
 		.update({
 			where: {
 				id: printer.currentJob.id,
@@ -163,10 +165,12 @@ export async function setCleared(printerId: number, isSuccessful: boolean) {
 				state: isSuccessful ? "COMPLETED" : "FAILED",
 				endedAt: new Date(),
 			},
+			select: jobDetailSelect,
 		})
 		.catch((err) => {
 			console.error("[OP][SERVICE][PRINTER] Error updating job", err);
 		});
+	if (jobState) WebhookUtility.sendWebhook(jobState);
 }
 
 /**
