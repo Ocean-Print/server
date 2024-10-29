@@ -3,6 +3,7 @@ import projectRouter from "../project.router";
 import authRouter from "./auth";
 import grantRouter from "./grants";
 import printerRouter from "./printers";
+import statsRouter from "./stats";
 import { getDetailsHook } from "@/hooks/getDetails.hook";
 import { type FastifyPluginAsync } from "fastify";
 
@@ -13,6 +14,7 @@ export default function apiRouter(): FastifyPluginAsync {
 		fastify.register(printerRouter(), { prefix: "/printers" });
 		fastify.register(authRouter(), { prefix: "/auth" });
 		fastify.register(grantRouter(), { prefix: "/grants" });
+		fastify.register(statsRouter(), { prefix: "/stats" });
 
 		fastify.route({
 			method: "GET",
