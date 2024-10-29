@@ -1,4 +1,5 @@
 import type { ProjectMaterial } from "@/schemas/project.schema";
+import * as ErrorUtility from "@/utilities/error.utility";
 import XML from "fast-xml-parser";
 import StreamZip from "node-stream-zip";
 
@@ -33,7 +34,7 @@ const PRINT_NAME_REGEX = /^(?:((?:m?pi)|(?:staff))_)?([a-z]+\d+)_(.+)$/i;
 export function parseName(name: string) {
 	let match = PRINT_NAME_REGEX.exec(name);
 	if (match === null) {
-		throw new Error(`Invalid print name. Use the format "gtname_desc".`);
+		throw ErrorUtility.invalidFileNameError();
 	}
 
 	let userRole = match[1]?.toUpperCase() ?? null;

@@ -119,10 +119,21 @@ export function fileTooLargeError() {
 /**
  * Incompatible materials error.
  */
-export function incompatibleMaterialsError() {
+export function incompatibleMaterialsError(message?: string) {
 	return new OceanPrintError(
 		"IncompatibleMaterials",
-		"Selected materials are not compatible with any printer",
+		message ?? "Selected materials are not compatible with any printer",
+		400,
+	);
+}
+
+/**
+ * Invalid file name error.
+ */
+export function invalidFileNameError() {
+	return new OceanPrintError(
+		"InvalidFileName",
+		"Invalid file name. Please use the format `{gtname}_{desc}`",
 		400,
 	);
 }
