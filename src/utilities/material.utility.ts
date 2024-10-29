@@ -50,3 +50,94 @@ export function compareMaterials(
 
 	return true;
 }
+
+/**
+ * Compare a list of materials to a list of lists of materials.
+ * @param a - Primary list of materials (printers).
+ * @param b - Secondary list of lists of materials (job). The name property is optional, but will be used to determine if the color should be considered.
+ */
+export function compareMaterialsList(
+	a: { type: string; color: string }[][],
+	b: { type: string; color: string; name?: string }[],
+) {
+	return a.some((materials) => compareMaterials(materials, b));
+}
+
+/**
+ * Round the material to the closest existing material.
+ * The material type must be identical, but the color is rounded to the closest existing color.
+ * Null is returned if no existing materials are found.
+ * @param material - The material to round.
+ * @param materials - The list of existing materials.
+ */
+export function roundMaterial(
+	material: {
+		id: number;
+		type: string;
+		color: string;
+		name: string;
+		usage: number;
+	},
+	materials: { type: string; color: string }[],
+) {
+	// If the name does not contain "color", we don't care about the color
+	if (!/color/i.test(material.name)) {
+		const existing = materials.find((m) => m.type === material.type);
+		if (existing) {
+			return material;
+		}
+		return null;
+	}
+
+	const type = material.type;
+	const color = ColorUtility.forceHexToRgb(material.color);
+	const lab = ColorUtility.rgbToLab(color);
+	let closest: {
+		id: number;
+		type: string;
+		color: string;
+		name: string;
+		usage: number;
+	} | null = null;
+	let closestDeltaE = Infinity;
+
+	for (const existing of materials) {
+		if (existing.type !== type) continue;
+
+		const existingColor = ColorUtility.forceHexToRgb(existing.color);
+		const existingLab = ColorUtility.rgbToLab(existingColor);
+		const deltaE = ColorUtility.deltaE(lab, existingLab);
+
+		if (deltaE < closestDeltaE) {
+			closest = {
+				id: material.id,
+				type: existing.type,
+				color: existing.color,
+				name: material.name,
+				usage: material.usage,
+			};
+			closestDeltaE = deltaE;
+		}
+	}
+
+	return closest;
+}
+
+/**
+ * Round the materials to the closest existing materials.
+ * @param materials - The materials to round.
+ * @param existing - The list of existing materials.
+ * @returns The rounded materials.
+ */
+export function roundMaterials(
+	materials: {
+		id: number;
+		type: string;
+		color: string;
+		name: string;
+		usage: number;
+	}[],
+	existing: { type: string; color: string }[],
+) {
+	return materials.map((material) => roundMaterial(material, existing));
+}

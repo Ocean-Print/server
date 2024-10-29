@@ -170,7 +170,7 @@ export async function setCleared(printerId: number, isSuccessful: boolean) {
 }
 
 /**
- *
+ * Get all materials from all printers as a list of materials per printer.
  * @returns
  */
 export async function getAllMaterials() {
@@ -180,6 +180,15 @@ export async function getAllMaterials() {
 		},
 	});
 	return printers.map((printer) => printer.materials);
+}
+
+/**
+ * Get all materials from all printers as a single list.
+ * @returns
+ */
+export async function getAllMaterialsFlat() {
+	let materials = await getAllMaterials();
+	return materials.flat();
 }
 
 /**
