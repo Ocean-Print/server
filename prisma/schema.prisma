@@ -95,13 +95,14 @@ model Printer {
   isEnabled Boolean @default(true)
 
   /// ![{ host: string, serial: string; accessCode: string; }]
-  options       Json   @default("{}")
+  options       Json    @default("{}")
   /// ![{ type: string; color: string; }]
-  materials     Json[] @default([])
+  materials     Json[]  @default([])
   /// ![{ state: "UNKNOWN" | "ERROR" | "GOOD" | "UPDATING" | "DISPATCHING"; errors: Array<{name: string, message: string}>; progress: number; isClear: boolean; }]
-  systemStatus  Json   @default("{}")
+  systemStatus  Json    @default("{}")
   /// ![{ state: "UNKNOWN" | "IDLE" | "PRINTING" | "PAUSED" | "FINISHED"; errors: Array<{name: string, message: string}>; currentJobName: string; progress: number; timeRemaining: number; }]
-  printerStatus Json   @default("{}")
+  printerStatus Json    @default("{}")
+  camera        String?
 
   currentJob   Job?  @relation(fields: [currentJobId], references: [id])
   currentJobId Int?  @unique

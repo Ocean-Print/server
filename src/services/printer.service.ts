@@ -1,5 +1,6 @@
 import * as errors from "../utilities/error.utility";
 import prisma from "../utilities/prisma.utility";
+import * as CameraQueue from "@/queues/camera.queue";
 import * as UpdateQueue from "@/queues/update.queue";
 import {
 	printerDetailSelect,
@@ -69,6 +70,7 @@ export async function createPrinter(data: Prisma.PrinterCreateInput) {
 
 	// Queue an update job for the printer
 	await UpdateQueue.queueUpdateJob(result.id);
+	await CameraQueue.queueCaptureJob(result.id);
 
 	return result;
 }
@@ -93,6 +95,7 @@ export async function updatePrinter(
 
 	// Ensure an update job is queued (this is kinda unnecessary)
 	await UpdateQueue.queueUpdateJob(printerId);
+	await CameraQueue.queueCaptureJob(printerId);
 
 	return result;
 }
@@ -196,5 +199,6 @@ export async function initializePrinters() {
 	const printers = await prisma.printer.findMany();
 	for (const printer of printers) {
 		UpdateQueue.queueUpdateJob(printer.id);
+		CameraQueue.queueCaptureJob(printer.id);
 	}
 }
