@@ -7,6 +7,7 @@ export const printerPreviewArgs = {
 		systemStatus: true,
 		printerStatus: true,
 		materials: true,
+		camera: true,
 		currentJob: {
 			select: {
 				id: true,
@@ -32,6 +33,7 @@ export const printerDetailSelect: Partial<Prisma.PrinterSelect> = {
 	printerStatus: true,
 	materials: true,
 	options: true,
+	camera: true,
 	currentJob: {
 		select: {
 			id: true,
