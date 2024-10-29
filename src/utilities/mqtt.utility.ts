@@ -190,7 +190,7 @@ function parsePublishMessage(packet: Buffer) {
 	// 1. Parse Fixed Header
 	const fixedHeader = packet[offset++];
 	const messageType = fixedHeader >> 4; // Upper nibble for message type (PUBLISH should be 3)
-	if (messageType !== 3) {
+	if (messageType !== 3 && messageType !== 7) {
 		throw new Error("Invalid MQTT PUBLISH packet");
 	}
 
@@ -280,28 +280,38 @@ export function getPrinterState(
 			client.write(createConnectPacket("bblp", "bblp", accessCode));
 		});
 
+		let expectingPayload = false;
+		let payload = "";
+
 		client.on("data", (data) => {
 			const messageType = data[0] >> 4;
-			lastPacket = messageType;
 
-			if (messageType === MQTTMessageType.CONNACK) {
+			if (messageType === MQTTMessageType.CONNACK && !expectingPayload) {
 				// After connecting, subscribe to the report
 				client.write(createSubscribePacket(`device/${serial}/report`));
-			} else if (messageType === MQTTMessageType.SUBACK) {
-				// After the sub ackowledgement, request a status push
+			} else if (messageType === MQTTMessageType.SUBACK && !expectingPayload) {
+				// After the sub acknowledgement, request a status push
 				client.write(
 					createPublishPacket(`device/${serial}/request`, PUSH_ALL_PAYLOAD),
 				);
-			} else if (messageType === MQTTMessageType.PUBLISH) {
-				// Parse the incomming message
-				const message = parsePublishMessage(data);
-				const paylaod = JSON.parse(message.payload);
+			} else if (messageType === MQTTMessageType.PUBLISH || expectingPayload) {
+				// Parse the incoming message
+				try {
+					const message = expectingPayload
+						? { payload: data.toString() }
+						: parsePublishMessage(data);
+					payload += message.payload;
 
-				// Only resolve if the message is the result of our push request
-				if (paylaod.print.command === "push_status") {
-					const outputState = convertState(paylaod.print);
+					const json = JSON.parse(payload) as {
+						print: RawPrinterState;
+					};
+					const state = convertState(json.print);
 					client.write(createDisconnectPacket());
-					resolve(outputState);
+					resolve(state);
+				} catch {
+					// If we have an error parsing the JSON of the first payload,
+					// we should expect more payloads that will be concatenated
+					expectingPayload = true;
 				}
 			}
 		});
