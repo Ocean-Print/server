@@ -175,6 +175,45 @@ export default function jobRouter(): FastifyPluginAsync {
 		});
 
 		fastify.route<{
+			Body: {
+				projectId: number;
+				priority?: number;
+			};
+		}>({
+			method: "POST",
+			url: "/",
+			schema: {
+				body: {
+					type: "object",
+					properties: {
+						projectId: {
+							type: "integer",
+						},
+						priority: {
+							type: "number",
+						},
+					},
+					required: ["projectId"],
+				},
+			},
+			handler: async (request, reply) => {
+				const job = await JobService.createJob({
+					project: {
+						connect: {
+							id: request.body.projectId,
+						},
+					},
+					priority: request.body.priority || 0,
+				});
+
+				reply.send({
+					success: true,
+					job,
+				});
+			},
+		});
+
+		fastify.route<{
 			Params: {
 				id: number;
 			};

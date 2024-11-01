@@ -150,7 +150,7 @@ async function worker({ printerId }: JobData) {
 	}
 
 	// Update states
-	await JobService.updateJob(job.id, {
+	const updatedJob = await JobService.updateJob(job.id, {
 		state: "PRINTING",
 		startedAt: new Date(),
 		printer: {
@@ -179,7 +179,7 @@ async function worker({ printerId }: JobData) {
 	});
 
 	// Send webhook
-	WebhookUtility.sendWebhook(job);
+	if (updatedJob) await WebhookUtility.sendWebhook(updatedJob);
 
 	console.log(`[OP][DISPATCH][${printer.id}] Dispatch complete`);
 }
