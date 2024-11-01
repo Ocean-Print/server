@@ -1,10 +1,11 @@
 {
 	"name": "@ocean-print/server",
-	"version": "2.2.0",
+	"version": "2.2.1",
 	"private": true,
 	"description": "Automated 3D printing management system",
 	"scripts": {
-		"start": "tsx src/index.ts",
+		"start": "node dist/index.js",
+		"dev": "tsx src/index.ts",
 		"build": "tsc && tsc-alias",
 		"format": "prettier --write .",
 		"prisma:generate": "prisma generate",

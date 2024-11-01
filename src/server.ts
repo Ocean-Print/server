@@ -21,12 +21,13 @@ server.setErrorHandler((error, request, reply) => {
 			},
 		});
 	} else if (error.code === "P2025") {
+		let modelName = (error as any).meta?.modelName ?? "Resource";
 		// Prisma model not found
 		reply.status(404).send({
 			success: false,
 			error: {
-				name: `${error.meta.modelName}NotFound`,
-				message: `The requested ${error.meta.modelName} could not be found.`,
+				name: `${modelName}NotFound`,
+				message: `The requested ${modelName} could not be found.`,
 			},
 		});
 	} else {

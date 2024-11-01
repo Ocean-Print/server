@@ -31,7 +31,6 @@ export async function queueCaptureJob(printerId: number, i = 0, delay = 0) {
 			worker,
 			onSuccess: async () => {
 				// Queue the next job
-				console.log(`[OP][UPDATE][${printerId}] Capture completed`);
 				queueCaptureJob(printerId, 0, 30000);
 			},
 			onFailure: async (error) => {
@@ -43,12 +42,10 @@ export async function queueCaptureJob(printerId: number, i = 0, delay = 0) {
 						`[OP][CAPTURE][${printerId}] Printer removed before capture completion`,
 					);
 				} else {
-					console.log(
-						`[OP][CAPTURE][${printerId}] Capture failed: ${error.message}`,
-					);
+					console.log(`[OP][CAPTURE][${printerId}] Capture failed`);
+					console.error(error);
 
 					// Retry the job
-					console.log(`[OP][CAPTURE][${printerId}] Retrying capture`);
 					queueCaptureJob(printerId, i + 1, 1000);
 				}
 			},
@@ -96,6 +93,7 @@ async function worker({ printerId }: CaptureData) {
 			}
 		})
 		.catch((e) => {
-			console.log(e);
+			console.error(`[OP][CAPTURE][${printerId}] Capture failed`);
+			console.error(e);
 		});
 }

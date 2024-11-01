@@ -512,7 +512,6 @@ export function sendPrinterCommend(
 
 					// Only resolve if the message is the result of our push request
 					if (payload.print.command === command.print.command) {
-						console.log("MQTT <= DISCONNECT");
 						client.write(createDisconnectPacket());
 						resolve();
 					}
