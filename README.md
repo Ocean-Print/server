@@ -8,6 +8,9 @@
 | `SERVER_PORT`         | The port which the HTTP server will be accessible on. | `80`                                                  |
 | `DATA_UPLOADS_DIR`    | The directory where uploaded data will be stored.     | `/data/uploads`                                       |
 | `DATA_THUMBNAILS_DIR` | The directory where thumbnail data will be stored.    | `/data/thumbnails`                                    |
+| `RECEIPTS_HOST`       | The host of the receipts printer.                     | `192.168.68.1`                                        |
+| `RECEIPTS_MODEL`      | The model of the receipts printer.                    | `BROTHER QL-810W`                                     |
+| `WEBHOOK_URL`         | The URL of the webhook to send print job updates to.  | `http://localhost:3000/print`                         |
 
 ## License
 

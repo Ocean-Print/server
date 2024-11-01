@@ -1,5 +1,6 @@
 import clearPrinterRouter from "./clearPrinter.router";
 import createPrinterRouter from "./createPrinter.router";
+import deletePrinterRouter from "./deletePrinter.router";
 import getPrinterRouter from "./getPrinter.router";
 import getPrintersRouter from "./getPrinters.router";
 import updatePrinterRouter from "./updatePrinter.router";
@@ -17,5 +18,7 @@ export default function printerRouter(): FastifyPluginAsync {
 		fastify.register(updatePrinterRouter());
 		// POST /api/printers/:id/_clear
 		fastify.register(clearPrinterRouter());
+		// DELETE /api/printers/:id
+		fastify.register(deletePrinterRouter());
 	};
 }

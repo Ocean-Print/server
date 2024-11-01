@@ -173,12 +173,6 @@ async function worker({ printerId }: UpdateJobData) {
 				});
 				// Update the system status
 				newPrinterData.systemStatus.isClear = false;
-				// Connect the job to the printer
-				newPrinterData.currentJob = {
-					connect: {
-						id: currentJobId,
-					},
-				};
 			}
 
 			// Update the printer

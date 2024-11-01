@@ -87,11 +87,25 @@ export default function oceanPrintRoute(): FastifyPluginAsync {
 
 			// Ensure the material is valid
 			const printerMaterials = await PrinterService.getAllMaterials();
-			const isValidMaterials = printerMaterials.some((printerMaterial) =>
-				MaterialUtility.compareMaterials(printerMaterial, metadata.materials),
+			let roundedMaterials = MaterialUtility.roundMaterials(
+				metadata.materials,
+				printerMaterials.flat(),
+			);
+			// Ensure none of the materials are null
+			if (roundedMaterials.some((material) => material === null)) {
+				throw errors.incompatibleMaterialsError(
+					"One or more materials do not exist",
+				);
+			}
+			// Ensure the materials are compatible with some printer
+			const isValidMaterials = MaterialUtility.compareMaterialsList(
+				printerMaterials,
+				roundedMaterials as { type: string; color: string }[],
 			);
 			if (!isValidMaterials) {
-				throw errors.incompatibleMaterialsError();
+				throw errors.incompatibleMaterialsError(
+					"The selected materials are not compatible with any printer",
+				);
 			}
 
 			// Save the file to the data directory
@@ -127,14 +141,12 @@ export default function oceanPrintRoute(): FastifyPluginAsync {
 						user: {
 							connectOrCreate: {
 								where: {
-									username: parsedName.user,
+									name: parsedName.user,
 								},
 								create: {
-									username: parsedName.user,
+									name: parsedName.user,
 									email: parsedName.user + "@gatech.edu",
-									password: "",
 									role: userRole,
-									access: "NONE",
 								},
 							},
 						},
@@ -142,7 +154,13 @@ export default function oceanPrintRoute(): FastifyPluginAsync {
 						file: fileName,
 						printerModel: metadata.printerModel,
 						printTime: metadata.printTime,
-						materials: metadata.materials,
+						materials: roundedMaterials as {
+							id: number;
+							type: string;
+							color: string;
+							name: string;
+							usage: number;
+						}[],
 					},
 				},
 			});

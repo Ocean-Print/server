@@ -1,5 +1,6 @@
 import * as JobService from "../services/job.service";
 import * as ErrorUtility from "../utilities/error.utility";
+import * as ReceiptUtility from "../utilities/receipt.utility";
 import { type FastifyPluginAsync } from "fastify";
 
 function parseSortParams(sort: string) {
@@ -170,6 +171,70 @@ export default function jobRouter(): FastifyPluginAsync {
 							error,
 						});
 					});
+			},
+		});
+
+		fastify.route<{
+			Body: {
+				projectId: number;
+				priority?: number;
+			};
+		}>({
+			method: "POST",
+			url: "/",
+			schema: {
+				body: {
+					type: "object",
+					properties: {
+						projectId: {
+							type: "integer",
+						},
+						priority: {
+							type: "number",
+						},
+					},
+					required: ["projectId"],
+				},
+			},
+			handler: async (request, reply) => {
+				const job = await JobService.createJob({
+					project: {
+						connect: {
+							id: request.body.projectId,
+						},
+					},
+					priority: request.body.priority || 0,
+				});
+
+				reply.send({
+					success: true,
+					job,
+				});
+			},
+		});
+
+		fastify.route<{
+			Params: {
+				id: number;
+			};
+		}>({
+			method: "POST",
+			url: "/:id/_receipt",
+			schema: {
+				params: {
+					type: "object",
+					properties: {
+						id: { type: "integer" },
+					},
+				},
+			},
+			handler: async (request, reply) => {
+				const job = await JobService.getJob(request.params.id);
+				if (!job) throw ErrorUtility.jobNotFoundError(request.params.id);
+				await ReceiptUtility.printReceipt(job);
+				reply.send({
+					success: true,
+				});
 			},
 		});
 	};

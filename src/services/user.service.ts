@@ -8,19 +8,19 @@ import type { Prisma } from "@prisma/client";
  */
 export function createUser(newUser: Prisma.UserCreateInput) {
 	return prisma.user.upsert({
-		where: { username: newUser.username },
+		where: { name: newUser.name },
 		update: {},
 		create: newUser,
 	});
 }
 
 /**
- * Get a user by their username.
- * @param username - The username of the user.
+ * Get a user by their name.
+ * @param name - The name of the user.
  * @returns The user.
  */
-export async function getUserByName(username: string) {
+export async function getUserByName(name: string) {
 	return prisma.user.findUnique({
-		where: { username },
+		where: { name },
 	});
 }

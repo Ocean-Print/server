@@ -1,13 +1,16 @@
 import * as errors from "../utilities/error.utility";
 import prisma from "../utilities/prisma.utility";
+import * as CameraQueue from "@/queues/camera.queue";
 import * as UpdateQueue from "@/queues/update.queue";
+import { jobDetailSelect } from "@/schemas/job.schema";
 import {
 	printerDetailSelect,
 	PrinterDetailOutput,
-	printerPreviewArgs,
+	printerPreviewSelect,
 	PrinterStatus,
 	SystemStatus,
 } from "@/schemas/printer.schema";
+import * as WebhookUtility from "@/utilities/webhook.utility";
 import type { Prisma } from "@prisma/client";
 
 export const DEFAULT_PRINTER_STATUS: PrinterStatus = {
@@ -31,7 +34,7 @@ export const DEFAULT_SYSTEM_STATUS: SystemStatus = {
  */
 export async function getPrinters() {
 	return prisma.printer.findMany({
-		...printerPreviewArgs,
+		select: printerPreviewSelect,
 		orderBy: {
 			id: "asc",
 		},
@@ -69,6 +72,7 @@ export async function createPrinter(data: Prisma.PrinterCreateInput) {
 
 	// Queue an update job for the printer
 	await UpdateQueue.queueUpdateJob(result.id);
+	await CameraQueue.queueCaptureJob(result.id);
 
 	return result;
 }
@@ -93,6 +97,7 @@ export async function updatePrinter(
 
 	// Ensure an update job is queued (this is kinda unnecessary)
 	await UpdateQueue.queueUpdateJob(printerId);
+	await CameraQueue.queueCaptureJob(printerId);
 
 	return result;
 }
@@ -151,7 +156,7 @@ export async function setCleared(printerId: number, isSuccessful: boolean) {
 		return;
 	}
 
-	await prisma.job
+	let jobState = await prisma.job
 		.update({
 			where: {
 				id: printer.currentJob.id,
@@ -160,14 +165,16 @@ export async function setCleared(printerId: number, isSuccessful: boolean) {
 				state: isSuccessful ? "COMPLETED" : "FAILED",
 				endedAt: new Date(),
 			},
+			select: jobDetailSelect,
 		})
 		.catch((err) => {
 			console.error("[OP][SERVICE][PRINTER] Error updating job", err);
 		});
+	if (jobState) WebhookUtility.sendWebhook(jobState);
 }
 
 /**
- *
+ * Get all materials from all printers as a list of materials per printer.
  * @returns
  */
 export async function getAllMaterials() {
@@ -177,6 +184,15 @@ export async function getAllMaterials() {
 		},
 	});
 	return printers.map((printer) => printer.materials);
+}
+
+/**
+ * Get all materials from all printers as a single list.
+ * @returns
+ */
+export async function getAllMaterialsFlat() {
+	let materials = await getAllMaterials();
+	return materials.flat();
 }
 
 /**
@@ -196,5 +212,6 @@ export async function initializePrinters() {
 	const printers = await prisma.printer.findMany();
 	for (const printer of printers) {
 		UpdateQueue.queueUpdateJob(printer.id);
+		CameraQueue.queueCaptureJob(printer.id);
 	}
 }

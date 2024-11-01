@@ -119,10 +119,21 @@ export function fileTooLargeError() {
 /**
  * Incompatible materials error.
  */
-export function incompatibleMaterialsError() {
+export function incompatibleMaterialsError(message?: string) {
 	return new OceanPrintError(
 		"IncompatibleMaterials",
-		"Selected materials are not compatible with any printer",
+		message ?? "Selected materials are not compatible with any printer",
+		400,
+	);
+}
+
+/**
+ * Invalid file name error.
+ */
+export function invalidFileNameError() {
+	return new OceanPrintError(
+		"InvalidFileName",
+		"Invalid file name. Please use the format `{gtname}_{desc}`",
 		400,
 	);
 }
@@ -132,4 +143,25 @@ export function incompatibleMaterialsError() {
  */
 export function deleteFailedError(object: string) {
 	return new OceanPrintError("DeleteFailed", `Failed to delete ${object}`, 500);
+}
+
+/**
+ * Invalid
+ */
+export function invalidTokenError() {
+	return new OceanPrintError("InvalidToken", "Invalid token", 400);
+}
+
+/**
+ * Unauthorized error.
+ */
+export function unauthorizedError(reason: string = "Unauthorized") {
+	return new OceanPrintError("Unauthorized", reason, 401);
+}
+
+/**
+ * Forbidden error.
+ */
+export function forbiddenError() {
+	return new OceanPrintError("Forbidden", "Forbidden", 403);
 }
