@@ -6,7 +6,7 @@ import { jobDetailSelect } from "@/schemas/job.schema";
 import {
 	printerDetailSelect,
 	PrinterDetailOutput,
-	printerPreviewArgs,
+	printerPreviewSelect,
 	PrinterStatus,
 	SystemStatus,
 } from "@/schemas/printer.schema";
@@ -34,7 +34,7 @@ export const DEFAULT_SYSTEM_STATUS: SystemStatus = {
  */
 export async function getPrinters() {
 	return prisma.printer.findMany({
-		...printerPreviewArgs,
+		select: printerPreviewSelect,
 		orderBy: {
 			id: "asc",
 		},
