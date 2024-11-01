@@ -30,7 +30,6 @@ export async function queueUpdateJob(printerId: number, i = 0, delay = 0) {
 			worker,
 			onSuccess: async () => {
 				// Queue the next job
-				console.log(`[OP][UPDATE][${printerId}] Update completed`);
 				queueUpdateJob(printerId, 0, 10000);
 			},
 			onFailure: async (error) => {
@@ -42,12 +41,10 @@ export async function queueUpdateJob(printerId: number, i = 0, delay = 0) {
 						`[OP][UPDATE][${printerId}] Printer removed before update completion`,
 					);
 				} else {
-					console.log(
-						`[OP][UPDATE][${printerId}] Update failed: ${error.message}`,
-					);
+					console.log(`[OP][UPDATE][${printerId}] Update failed`);
+					console.error(error);
 
 					// Retry the job
-					console.log(`[OP][UPDATE][${printerId}] Retrying update`);
 					queueUpdateJob(printerId, i + 1, 1000);
 				}
 			},
@@ -73,8 +70,6 @@ async function worker({ printerId }: UpdateJobData) {
 			state: "UPDATING",
 		},
 	});
-
-	console.log(`[OP][UPDATE][${printer.id}] Updating state`);
 
 	await MqttUtility.getPrinterState(
 		printer.options.host,
@@ -132,7 +127,6 @@ async function worker({ printerId }: UpdateJobData) {
 				["IDLE", "FINISHED"].includes(newPrinterData.printerStatus.state) &&
 				printer.systemStatus.isClear
 			) {
-				console.log(`[OP][UPDATE][${printer.id}] Queuing dispatch`);
 				DispatchQueue.queueDispatchJob(printer.id);
 			}
 

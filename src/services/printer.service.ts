@@ -125,21 +125,20 @@ export async function deletePrinter(printerId: number) {
  */
 export async function setCleared(printerId: number, isSuccessful: boolean) {
 	// Get the printer
-	console.log("[OP][SERVICE][PRINTER] Clearing printer", printerId);
 	const printer = await getPrinter(printerId);
 	if (!printer) {
-		console.log("[OP][SERVICE][PRINTER] Printer not found");
 		throw errors.printerNotFoundError(printerId);
 	}
 
 	// Only allow clearing if the printer is in an idle state
 	if (!["IDLE", "FINISHED"].includes(printer.printerStatus.state)) {
-		console.log("[OP][SERVICE][PRINTER] Clearing printer");
 		throw errors.printerNotIdleError();
 	}
 
 	// Update the printer
-	console.log("[OP][SERVICE][PRINTER] Setting printer as cleared");
+	console.log(
+		`[OP][SERVICE][PRINTER][${printerId}] Setting printer as cleared`,
+	);
 	await updatePrinter(printerId, {
 		systemStatus: {
 			...printer.systemStatus,
@@ -151,10 +150,7 @@ export async function setCleared(printerId: number, isSuccessful: boolean) {
 	});
 
 	// Update the print job
-	if (!printer.currentJob) {
-		console.log("[OP][SERVICE][PRINTER] No current job");
-		return;
-	}
+	if (!printer.currentJob) return;
 
 	let jobState = await prisma.job
 		.update({
@@ -168,7 +164,8 @@ export async function setCleared(printerId: number, isSuccessful: boolean) {
 			select: jobDetailSelect,
 		})
 		.catch((err) => {
-			console.error("[OP][SERVICE][PRINTER] Error updating job", err);
+			console.log("[OP][SERVICE][PRINTER] Error updating job");
+			console.error(err);
 		});
 	if (jobState) WebhookUtility.sendWebhook(jobState);
 }

@@ -32,9 +32,7 @@ export function queueDispatchJob(printerId: number, i = 0, delay = 0) {
 				printerId,
 			},
 			worker,
-			onSuccess: async () => {
-				console.log(`[OP][DISPATCH][${printerId}] Job completed`);
-			},
+			onSuccess: async () => {},
 			onFailure: async (error) => {
 				if (
 					error instanceof ErrorUtility.OceanPrintError &&
@@ -44,14 +42,11 @@ export function queueDispatchJob(printerId: number, i = 0, delay = 0) {
 						`[OP][DISPATCH][${printerId}] Printer removed before job completion`,
 					);
 				} else {
-					console.log(
-						`[OP][DISPATCH][${printerId}] Job failed: ${error.message}`,
-					);
+					console.log(`[OP][DISPATCH][${printerId}] Job failed`);
 
 					console.error(error);
 
 					// Retry the job
-					console.log(`[OP][DISPATCH][${printerId}] Retrying job`);
 					queueDispatchJob(printerId, i + 1, 1000);
 				}
 			},
@@ -78,11 +73,8 @@ async function worker({ printerId }: JobData) {
 		},
 	});
 
-	console.log(`[OP][DISPATCH][${printer.id}] Finding job to dispatch`);
-
 	const [jobToSend, jobToSendError] = await findJob(printer);
 	if (!jobToSend || jobToSendError) {
-		console.log(`[OP][DISPATCH][${printer.id}] No jobs to dispatch`);
 		await PrinterService.updatePrinter(printer.id, {
 			systemStatus: {
 				...printer.systemStatus,
